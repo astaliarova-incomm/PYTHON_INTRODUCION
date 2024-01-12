@@ -1,0 +1,69 @@
+import xml.etree.ElementTree as ET
+
+class XMLRecordProvider:
+    def __init__(self, file_path='records.xml'):
+        self.file_path = file_path
+
+    def read_xml_records(self):
+        """Read records from an XML file and return a list."""
+        records = []
+        try:
+            tree = ET.parse(self.file_path)
+            root = tree.getroot()
+
+            for record_element in root:
+                record = {}
+                for field_element in record_element:
+                    record[field_element.tag] = field_element.text
+                records.append(record)
+
+        except FileNotFoundError:
+            print(f"File not found: {self.file_path}")
+        return records
+
+    def remove_file(self):
+        """Remove the file if it exists."""
+        if os.path.exists(self.file_path):
+            os.remove(self.file_path)
+
+class NewsFeedTool:
+    # ... (previous implementation)
+
+    def process_xml_records(self, xml_record_provider):
+        """Process records from an XML file."""
+        records = xml_record_provider.read_xml_records()
+
+        # Process records here (similar to the previous implementation)
+        for record in records:
+            print(f"Processing XML record: {record}")
+
+        # Remove the file after processing
+        xml_record_provider.remove_file()
+
+
+news_feed_tool = NewsFeedTool()
+
+# Add some records
+news_feed_tool.add_news("News about", "Minsk")
+news_feed_tool.add_private_ad("Special Offer", "2024-01-15")
+news_feed_tool.add_custom_record("Custom Record", "Unique Custom Record")
+
+# Create an XMLRecordProvider instance and write records to an XML file
+xml_records = [
+    {"type": "News", "text": "Breaking News", "city": "New York"},
+    {"type": "Private Ad", "text": "Limited Time Offer", "expiration_date": "2024-01-20"},
+    {"type": "Custom", "text": "Custom Record", "custom_rule": "New Rule"}
+]
+root = ET.Element("records")
+for xml_record in xml_records:
+    record_element = ET.SubElement(root, "record")
+    for field, value in xml_record.items():
+        field_element = ET.SubElement(record_element, field)
+        field_element.text = value
+
+tree = ET.ElementTree(root)
+tree.write('records.xml')
+
+# Process records from the XML file and remove the file
+xml_record_provider = XMLRecordProvider('records.xml')
+news_feed_tool.process_xml_records(xml_record_provider)
